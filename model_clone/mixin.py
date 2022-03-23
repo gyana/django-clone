@@ -463,9 +463,12 @@ class CloneMixin(object):
             ):
                 rel_object = getattr(self, f.name, None)
                 if rel_object:
-                    new_rel_object = cloned_references.get(
-                        rel_object
-                    ) or CloneMixin._create_copy_of_instance(
+                    if  cloned_references.get(self):
+                        new_rel_object = cloned_references[self]
+                    elif hasattr(rel_object, "make_clone"):
+                        new_rel_object = rel_object.make_clone({f.field.name: duplicate}, using=using, cloned_references=cloned_references)
+                    else:
+                        new_rel_object = CloneMixin._create_copy_of_instance(
                         rel_object,
                         force=True,
                         sub_clone=True,
